@@ -158,6 +158,81 @@ class SystemManager:
 # Rol: Clase Cliente, validaciones robustas y encapsulación de datos personales.
 # ==============================
 
+class Client(Entity):
+    """
+    Clase que representa un cliente del sistema.
+    Implementa validaciones robustas para los datos personales (nombre, email, teléfono).
+    Demuestra encapsulación de datos mediante propiedades y validaciones estrictas.
+    """
+
+    def __init__(self, client_id, name, email, phone):
+        """
+        Inicializa un cliente con validaciones de datos.
+        
+        Args:
+            client_id: Identificador único del cliente.
+            name: Nombre completo del cliente (mínimo 3 caracteres, sin números).
+            email: Correo electrónico válido.
+            phone: Número de teléfono (mínimo 10 dígitos).
+        
+        Raises:
+            ValidationError: Si alguno de los datos no cumple con las validaciones.
+        """
+        super().__init__(client_id)
+        self._name = self._validate_name(name)
+        self._email = self._validate_email(email)
+        self._phone = self._validate_phone(phone)
+        self._registration_date = datetime.now()
+
+    @staticmethod
+    def _validate_name(name):
+        """Valida que el nombre tenga al menos 3 caracteres y no contenga números."""
+        if not isinstance(name, str) or len(name.strip()) < 3:
+            raise ValidationError("Name must be a string with at least 3 characters.")
+        if any(char.isdigit() for char in name):
+            raise ValidationError("Name cannot contain numbers.")
+        return name.strip()
+
+    @staticmethod
+    def _validate_email(email):
+        """Valida que el email tenga un formato correcto usando expresión regular."""
+        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(pattern, email):
+            raise ValidationError(f"Invalid email format: {email}")
+        return email.lower()
+
+    @staticmethod
+    def _validate_phone(phone):
+        """Valida que el teléfono tenga al menos 10 dígitos."""
+        phone_digits = ''.join(filter(str.isdigit, phone))
+        if len(phone_digits) < 10:
+            raise ValidationError("Phone must have at least 10 digits.")
+        return phone
+
+    @property
+    def name(self):
+        """Encapsulación del nombre del cliente."""
+        return self._name
+
+    @property
+    def email(self):
+        """Encapsulación del email del cliente."""
+        return self._email
+
+    @property
+    def phone(self):
+        """Encapsulación del teléfono del cliente."""
+        return self._phone
+
+    @property
+    def registration_date(self):
+        """Encapsulación de la fecha de registro."""
+        return self._registration_date
+
+    def get_summary(self):
+        """Retorna un resumen del cliente para mostrar en la interfaz."""
+        return f"[ID: {self.entity_id}] {self.name} ({self.email})"
+        
 # ==============================
 # APORTE FIN - Luz Yomaira Moreno
 # ==============================
