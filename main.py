@@ -179,59 +179,53 @@ class Client(Entity):
             ValidationError: Si alguno de los datos no cumple con las validaciones.
         """
         super().__init__(client_id)
-        self._name = self._validate_name(name)
-        self._email = self._validate_email(email)
-        self._phone = self._validate_phone(phone)
-        self._registration_date = datetime.now()
+        self.__name = None
+        self.__email = None
+        self.__phone = None
 
-    @staticmethod
-    def _validate_name(name):
-        """Valida que el nombre tenga al menos 3 caracteres y no contenga números."""
-        if not isinstance(name, str) or len(name.strip()) < 3:
-            raise ValidationError("Name must be a string with at least 3 characters.")
-        if any(char.isdigit() for char in name):
-            raise ValidationError("Name cannot contain numbers.")
-        return name.strip()
-
-    @staticmethod
-    def _validate_email(email):
-        """Valida que el email tenga un formato correcto usando expresión regular."""
-        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        if not re.match(pattern, email):
-            raise ValidationError(f"Invalid email format: {email}")
-        return email.lower()
-
-    @staticmethod
-    def _validate_phone(phone):
-        """Valida que el teléfono tenga al menos 10 dígitos."""
-        phone_digits = ''.join(filter(str.isdigit, phone))
-        if len(phone_digits) < 10:
-            raise ValidationError("Phone must have at least 10 digits.")
-        return phone
+        self.name = name
+        self.email = email
+        self.phone = phone
 
     @property
     def name(self):
-        """Encapsulación del nombre del cliente."""
-        return self._name
+        """Obtiene el nombre del cliente."""
+        return self.__name
+
+    @name.setter
+    def name(self, value):
+        """Valida que el nombre no esté vacío y tenga una longitud mínima."""
+        if not value or len(value.strip()) < 3:
+            raise ValidationError("Client name must contain at least 3 characters.")
+        self.__name = value.strip()
 
     @property
     def email(self):
-        """Encapsulación del email del cliente."""
-        return self._email
+        """Obtiene el correo del cliente."""
+        return self.__email
+
+    @email.setter
+    def email(self, value):
+        """Valida que el correo tenga un formato básico correcto."""
+        if not value or "@" not in value or "." not in value:
+            raise ValidationError("Client email is invalid.")
+        self.__email = value.strip()
 
     @property
     def phone(self):
-        """Encapsulación del teléfono del cliente."""
-        return self._phone
+        """Obtiene el teléfono del cliente."""
+        return self.__phone
 
-    @property
-    def registration_date(self):
-        """Encapsulación de la fecha de registro."""
-        return self._registration_date
+    @phone.setter
+    def phone(self, value):
+        """Valida que el teléfono sea numérico y tenga al menos 7 dígitos."""
+        if not value or not value.isdigit() or len(value) < 7:
+            raise ValidationError("Client phone must be numeric and contain at least 7 digits.")
+        self.__phone = value.strip()
 
     def get_summary(self):
-        """Retorna un resumen del cliente para mostrar en la interfaz."""
-        return f"[ID: {self.entity_id}] {self.name} ({self.email})"
+        """Retorna un resumen legible del cliente."""
+        return f"#{self.entity_id} - {self.name} | {self.email} | {self.phone}"
         
 # ==============================
 # APORTE FIN - Luz Yomaira Moreno
