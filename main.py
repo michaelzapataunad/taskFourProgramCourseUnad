@@ -241,190 +241,98 @@ class Client(Entity):
 # ==============================
 
 class Service(Entity, ABC):
+    """
+    Clase abstracta Servicio.
+    Define la estructura común de todos los servicios ofrecidos por Software FJ.
+    """
 
-    """
+    def __init__(self, entity_id, name, base_price, available=True):
+        super().__init__(entity_id)
+        self._name = name
+        self._base_price = float(base_price)
+        self._available = available
 
-    Clase abstracta Servicio.
+    @property
+    def name(self):
+        return self._name
 
-    Define la estructura común de todos los servicios ofrecidos por Software FJ.
+    @property
+    def base_price(self):
+        return self._base_price
 
-    """
+    @property
+    def available(self):
+        return self._available
 
- 
+    @abstractmethod
+    def calculate_cost(self, duration, tax=0.0, discount=0.0):
+        """
+        Método con parámetros opcionales que simula sobrecarga.
+        Permite calcular costo con impuestos, descuentos o sin ellos.
+        """
+        pass
 
-    def __init__(self, entity_id, name, base_price, available=True):
+    @abstractmethod
+    def describe_service(self):
+        """Describe el servicio especializado."""
+        pass
 
-        super().__init__(entity_id)
+    @abstractmethod
+    def validate_parameters(self):
+        """Valida parámetros propios del servicio especializado."""
+        pass
 
-        self._name = name
+    def get_summary(self):
+        """Resumen general del servicio."""
+        return f"#{self.entity_id} - {self.name} | Base price: ${self.base_price:,.2f}"
 
-        self._base_price = float(base_price)
-
-        self._available = available
-
- 
-
-    @property
-
-    def name(self):
-
-        return self._name
-
- 
-
-    @property
-
-    def base_price(self):
-
-        return self._base_price
-
- 
-
-    @property
-
-    def available(self):
-
-        return self._available
-
- 
-
-    @abstractmethod
-
-    def calculate_cost(self, duration, tax=0.0, discount=0.0):
-
-        """
-
-        Método con parámetros opcionales que simula sobrecarga.
-
-        Permite calcular costo con impuestos, descuentos o sin ellos.
-
-        """
-
-        pass
-
- 
-
-    @abstractmethod
-
-    def describe_service(self):
-
-        """Describe el servicio especializado."""
-
-        pass
-
- 
-
-    @abstractmethod
-
-    def validate_parameters(self):
-
-        """Valida parámetros propios del servicio especializado."""
-
-        pass
-
- 
-
-    def get_summary(self):
-
-        """Resumen general del servicio."""
-
-        return f"#{self.entity_id} - {self.name} | Base price: ${self.base_price:,.2f}"
-
- 
-
- 
 
 class RoomBookingService(Service):
+    """Servicio especializado para reservas de salas."""
 
-    """Servicio especializado para reservas de salas."""
+    def __init__(self, entity_id, name, base_price, room_capacity):
+        super().__init__(entity_id, name, base_price)
+        self.room_capacity = int(room_capacity)
 
- 
+    def validate_parameters(self):
+        """Valida que la sala tenga capacidad positiva y precio válido."""
+        if self.base_price <= 0:
+            raise ValidationError("Room service base price must be greater than zero.")
+        if self.room_capacity <= 0:
+            raise ValidationError("Room capacity must be greater than zero.")
 
-    def __init__(self, entity_id, name, base_price, room_capacity):
+    def calculate_cost(self, duration, tax=0.0, discount=0.0):
+        """Calcula el costo por duración, aplicando impuesto y descuento opcional."""
+        subtotal = self.base_price * duration
+        return subtotal + (subtotal * tax) - discount
 
-        super().__init__(entity_id, name, base_price)
+    def describe_service(self):
+        """Descripción polimórfica del servicio de sala."""
+        return f"Room booking for up to {self.room_capacity} people."
 
-        self.room_capacity = int(room_capacity)
-
- 
-
-    def validate_parameters(self):
-
-        """Valida que la sala tenga capacidad positiva y precio válido."""
-
-        if self.base_price <= 0:
-
-            raise ValidationError("Room service base price must be greater than zero.")
-
-        if self.room_capacity <= 0:
-
-            raise ValidationError("Room capacity must be greater than zero.")
-
- 
-
-    def calculate_cost(self, duration, tax=0.0, discount=0.0):
-
-        """Calcula el costo por duración, aplicando impuesto y descuento opcional."""
-
-        subtotal = self.base_price * duration
-
-        return subtotal + (subtotal * tax) - discount
-
- 
-
-    def describe_service(self):
-
-        """Descripción polimórfica del servicio de sala."""
-
-        return f"Room booking for up to {self.room_capacity} people."
-
- 
-
- 
 
 class EquipmentRentalService(Service):
+    """Servicio especializado para alquiler de equipos."""
 
-    """Servicio especializado para alquiler de equipos."""
+    def __init__(self, entity_id, name, base_price, equipment_quantity):
+        super().__init__(entity_id, name, base_price)
+        self.equipment_quantity = int(equipment_quantity)
 
- 
+    def validate_parameters(self):
+        """Valida cantidad de equipos y precio."""
+        if self.base_price <= 0:
+            raise ValidationError("Equipment rental price must be greater than zero.")
+        if self.equipment_quantity <= 0:
+            raise ValidationError("Equipment quantity must be greater than zero.")
 
-    def __init__(self, entity_id, name, base_price, equipment_quantity):
+    def calculate_cost(self, duration, tax=0.0, discount=0.0):
+        """Calcula costo considerando duración y cantidad de equipos."""
+        subtotal = self.base_price * duration * self.equipment_quantity
+        return subtotal + (subtotal * tax) - discount
 
-        super().__init__(entity_id, name, base_price)
-
-        self.equipment_quantity = int(equipment_quantity)
-
- 
-
-    def validate_parameters(self):
-
-        """Valida cantidad de equipos y precio."""
-
-        if self.base_price <= 0:
-
-            raise ValidationError("Equipment rental price must be greater than zero.")
-
-        if self.equipment_quantity <= 0:
-
-            raise ValidationError("Equipment quantity must be greater than zero.")
-
- 
-
-    def calculate_cost(self, duration, tax=0.0, discount=0.0):
-
-        """Calcula costo considerando duración y cantidad de equipos."""
-
-        subtotal = self.base_price * duration * self.equipment_quantity
-
-        return subtotal + (subtotal * tax) - discount
-
- 
-
-    def describe_service(self):
-
-        """Descripción polimórfica del alquiler de equipos."""
-
-        return f"Equipment rental including {self.equipment_quantity} item(s)."
+    def describe_service(self):
+        """Descripción polimórfica del alquiler de equipos."""
+        return f"Equipment rental including {self.equipment_quantity} item(s)."
 
 # ==============================
 
@@ -434,12 +342,102 @@ class EquipmentRentalService(Service):
 
 
 # ==============================
-# APORTE INICIO - Luis Carlos Salas
+# APORTE INICIO - Michael Zapata y Nicolas Valencia
 # Rol: Servicio SpecializedConsultingService y clase Reservation con confirmación/cancelación/procesamiento.
 # ==============================
 
+class SpecializedConsultingService(Service):
+    """Servicio especializado para asesorías profesionales."""
+
+    def __init__(self, entity_id, name, base_price, expert_level):
+        super().__init__(entity_id, name, base_price)
+        self.expert_level = int(expert_level)
+
+    def validate_parameters(self):
+        """Valida el precio y el nivel del experto."""
+        if self.base_price <= 0:
+            raise ValidationError("Consulting price must be greater than zero.")
+        if self.expert_level < 1 or self.expert_level > 5:
+            raise ValidationError("Expert level must be between 1 and 5.")
+
+    def calculate_cost(self, duration, tax=0.0, discount=0.0):
+        """Calcula costo con incremento de acuerdo con el nivel del experto."""
+        subtotal = self.base_price * duration * (1 + (self.expert_level * 0.10))
+        return subtotal + (subtotal * tax) - discount
+
+    def describe_service(self):
+        """Descripción polimórfica del servicio de asesoría."""
+        return f"Specialized consulting with expert level {self.expert_level}."
+
+
+class Reservation(Entity):
+    """Clase Reserva que integra cliente, servicio, duración, estado y costo final."""
+
+    VALID_STATES = ["Pending", "Confirmed", "Cancelled", "Processed"]
+
+    def __init__(self, entity_id, client, service, duration):
+        super().__init__(entity_id)
+        self.client = client
+        self.service = service
+        self.duration = int(duration)
+        self.status = "Pending"
+        self.total_cost = 0
+
+        self.validate_reservation()
+
+    def validate_reservation(self):
+        """Valida que la reserva tenga datos correctos antes de procesarse."""
+        if not isinstance(self.client, Client):
+            raise ReservationError("Reservation requires a valid client.")
+        if not isinstance(self.service, Service):
+            raise ReservationError("Reservation requires a valid service.")
+        if self.duration <= 0:
+            raise ReservationError("Reservation duration must be greater than zero.")
+        if not self.service.available:
+            raise ServiceUnavailableError("Selected service is not available.")
+
+    def confirm(self):
+        """Confirma una reserva pendiente."""
+        if self.status != "Pending":
+            raise ReservationError("Only pending reservations can be confirmed.")
+        self.status = "Confirmed"
+        logging.info(f"Reservation #{self.entity_id} confirmed.")
+
+    def cancel(self):
+        """Cancela una reserva si no ha sido procesada."""
+        if self.status == "Processed":
+            raise ReservationError("Processed reservations cannot be cancelled.")
+        self.status = "Cancelled"
+        logging.info(f"Reservation #{self.entity_id} cancelled.")
+
+    def process(self):
+        """
+        Procesa la reserva.
+        Se usa try/except/else/finally y encadenamiento de excepciones.
+        """
+        try:
+            self.confirm()
+            self.total_cost = self.service.calculate_cost(self.duration, tax=0.19, discount=0)
+        except Exception as error:
+            self.status = "Cancelled"
+            raise ReservationError("The reservation could not be processed correctly.") from error
+        else:
+            self.status = "Processed"
+            logging.info(f"Reservation #{self.entity_id} processed successfully.")
+        finally:
+            logging.info(f"Reservation #{self.entity_id} final status: {self.status}")
+
+    def get_summary(self):
+        """Retorna resumen de la reserva."""
+        return (
+            f"#{self.entity_id} | Client: {self.client.name} | "
+            f"Service: {self.service.name} | Duration: {self.duration} | "
+            f"Status: {self.status} | Total: ${self.total_cost:,.2f}"
+        )
+
+
 # ==============================
-# APORTE FIN - Luis Carlos Salas
+# APORTE FIN - Michael Zapata y Nicolas Valencia
 # ==============================
 
 
