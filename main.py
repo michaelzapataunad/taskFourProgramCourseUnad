@@ -233,12 +233,203 @@ class Client(Entity):
 
 
 # ==============================
-# APORTE INICIO - Juan Rodriguez
+
+# APORTE INICIO - Luz Yomaira Moreno Viveros
+
 # Rol: Clase abstracta Service y servicios derivados RoomBookingService y EquipmentRentalService.
-# ==============================
 
 # ==============================
-# APORTE FIN - Juan Rodriguez
+
+class Service(Entity, ABC):
+
+    """
+
+    Clase abstracta Servicio.
+
+    Define la estructura común de todos los servicios ofrecidos por Software FJ.
+
+    """
+
+ 
+
+    def __init__(self, entity_id, name, base_price, available=True):
+
+        super().__init__(entity_id)
+
+        self._name = name
+
+        self._base_price = float(base_price)
+
+        self._available = available
+
+ 
+
+    @property
+
+    def name(self):
+
+        return self._name
+
+ 
+
+    @property
+
+    def base_price(self):
+
+        return self._base_price
+
+ 
+
+    @property
+
+    def available(self):
+
+        return self._available
+
+ 
+
+    @abstractmethod
+
+    def calculate_cost(self, duration, tax=0.0, discount=0.0):
+
+        """
+
+        Método con parámetros opcionales que simula sobrecarga.
+
+        Permite calcular costo con impuestos, descuentos o sin ellos.
+
+        """
+
+        pass
+
+ 
+
+    @abstractmethod
+
+    def describe_service(self):
+
+        """Describe el servicio especializado."""
+
+        pass
+
+ 
+
+    @abstractmethod
+
+    def validate_parameters(self):
+
+        """Valida parámetros propios del servicio especializado."""
+
+        pass
+
+ 
+
+    def get_summary(self):
+
+        """Resumen general del servicio."""
+
+        return f"#{self.entity_id} - {self.name} | Base price: ${self.base_price:,.2f}"
+
+ 
+
+ 
+
+class RoomBookingService(Service):
+
+    """Servicio especializado para reservas de salas."""
+
+ 
+
+    def __init__(self, entity_id, name, base_price, room_capacity):
+
+        super().__init__(entity_id, name, base_price)
+
+        self.room_capacity = int(room_capacity)
+
+ 
+
+    def validate_parameters(self):
+
+        """Valida que la sala tenga capacidad positiva y precio válido."""
+
+        if self.base_price <= 0:
+
+            raise ValidationError("Room service base price must be greater than zero.")
+
+        if self.room_capacity <= 0:
+
+            raise ValidationError("Room capacity must be greater than zero.")
+
+ 
+
+    def calculate_cost(self, duration, tax=0.0, discount=0.0):
+
+        """Calcula el costo por duración, aplicando impuesto y descuento opcional."""
+
+        subtotal = self.base_price * duration
+
+        return subtotal + (subtotal * tax) - discount
+
+ 
+
+    def describe_service(self):
+
+        """Descripción polimórfica del servicio de sala."""
+
+        return f"Room booking for up to {self.room_capacity} people."
+
+ 
+
+ 
+
+class EquipmentRentalService(Service):
+
+    """Servicio especializado para alquiler de equipos."""
+
+ 
+
+    def __init__(self, entity_id, name, base_price, equipment_quantity):
+
+        super().__init__(entity_id, name, base_price)
+
+        self.equipment_quantity = int(equipment_quantity)
+
+ 
+
+    def validate_parameters(self):
+
+        """Valida cantidad de equipos y precio."""
+
+        if self.base_price <= 0:
+
+            raise ValidationError("Equipment rental price must be greater than zero.")
+
+        if self.equipment_quantity <= 0:
+
+            raise ValidationError("Equipment quantity must be greater than zero.")
+
+ 
+
+    def calculate_cost(self, duration, tax=0.0, discount=0.0):
+
+        """Calcula costo considerando duración y cantidad de equipos."""
+
+        subtotal = self.base_price * duration * self.equipment_quantity
+
+        return subtotal + (subtotal * tax) - discount
+
+ 
+
+    def describe_service(self):
+
+        """Descripción polimórfica del alquiler de equipos."""
+
+        return f"Equipment rental including {self.equipment_quantity} item(s)."
+
+# ==============================
+
+# APORTE FIN - Luz Yomaira Moreno Viveros 
+
 # ==============================
 
 
